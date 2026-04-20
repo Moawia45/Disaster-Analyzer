@@ -122,7 +122,7 @@ async function analyzeLocation(lat, lon) {
     setLoading(true);
 
     try {
-        const response = await fetch(`http://localhost:8000/analyze?lat=${lat}&lon=${lon}`);
+        const response = await fetch(`/api/analyze?lat=${lat}&lon=${lon}`);
         const result = await response.json();
         
         lastAnalysisData = result; // Store for report

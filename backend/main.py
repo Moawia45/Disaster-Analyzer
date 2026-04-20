@@ -144,6 +144,7 @@ def get_recommendations(earthquake_score, rainfall_score, flood_score):
     return recs
 
 @app.get("/analyze")
+@app.get("/api/analyze")
 async def analyze_location(lat: float, lon: float):
     # Run API calls in parallel
     eq_task = get_earthquake_data(lat, lon)

@@ -122,9 +122,17 @@ async function analyzeLocation(lat, lon) {
     setLoading(true);
 
     try {
-        const response = await fetch(`/api/analyze?lat=${lat}&lon=${lon}`);
+        // Detect environment for API URL
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiUrl = isLocal ? `http://localhost:8000/analyze?lat=${lat}&lon=${lon}` : `/api/analyze?lat=${lat}&lon=${lon}`;
+        
+        const response = await fetch(apiUrl);
         const result = await response.json();
         
+        if (result.error) {
+           throw new Error(result.error);
+        }
+
         lastAnalysisData = result; // Store for report
         updateUI(result);
     } catch (error) {
@@ -203,10 +211,13 @@ async function exportPremiumPDF() {
         document.getElementById('report-location').innerText = document.getElementById('location-input').value || 
                                                               `${lastAnalysisData.location.lat}, ${lastAnalysisData.location.lon}`;
         
-        document.getElementById('report-overall-score').innerText = Math.round(lastAnalysisData.overall_score);
+        document.getElementById('report-overall-score').innerText = Math.round(lastAnalysisData.overall_score || 0);
         const riskLevelEl = document.getElementById('report-risk-level');
         const riskInsightEl = document.getElementById('report-risk-insight');
-        riskLevelEl.innerText = lastAnalysisData.risk_level.toUpperCase() + ' RISK';
+        
+        // Safety check for risk_level
+        const riskLevel = lastAnalysisData.risk_level ? lastAnalysisData.risk_level.toUpperCase() : "UNKNOWN";
+        riskLevelEl.innerText = riskLevel + ' RISK';
         
         // Risk level styling and insights
         if (lastAnalysisData.overall_score > 70) {

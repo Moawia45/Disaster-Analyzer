@@ -239,36 +239,57 @@ async function exportPremiumPDF() {
             reportRecs.appendChild(li);
         });
 
-        // Template is off-screen but always in layout flow to ensure height/width are detected
+        // Template is currently at -9999px. We need to prepare it for capture.
         const element = document.getElementById('premium-report-template');
-        
-        // Final Robust PDF Settings
-        const opt = {
-            margin: [10, 10], // top/bottom, left/right
-            filename: `Disaster_Report_${Date.now().toString().slice(-4)}.pdf`,
-            image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { 
-                scale: 2, 
-                backgroundColor: '#ffffff', // Force white background
-                useCORS: true, 
-                logging: false, // Turn off for production
-                letterRendering: true,
-                allowTaint: false,
-                scrollY: 0, 
-                scrollX: 0
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        console.log("Preparing high-resolution capture...");
+
+        // Ensure template is accessible for capture but hidden from user
+        element.style.position = 'fixed';
+        element.style.left = '0';
+        element.style.top = '0';
+        element.style.zIndex = '-100'; // Way behind
+        element.style.visibility = 'visible';
+        element.style.display = 'block';
+
+        const canvasOptions = {
+            scale: 2, // High resolution
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            letterRendering: true,
+            allowTaint: false
         };
 
-        // Delay execution slightly to allow for any UI/data updates to finish painting
-        setTimeout(() => {
-            html2pdf().from(element).set(opt).save().then(() => {
-                console.log("Report generated successfully.");
-            }).catch(err => {
-                console.error("PDF generation error:", err);
-                alert("Error generating PDF: " + err.message);
-            });
-        }, 800);
+        // Manual capture loop for maximum local file reliability
+        setTimeout(async () => {
+            try {
+                const canvas = await html2canvas(element, canvasOptions);
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                
+                // jsPDF Manual construction
+                const { jsPDF } = window.jspdf || { jsPDF: window.jsPDF };
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                
+                // Add the captured image to the PDF
+                pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+                
+                // Final save
+                const filename = `Disaster_Report_Moawia_${Date.now().toString().slice(-4)}.pdf`;
+                pdf.save(filename);
+
+                // Return template to safe state
+                element.style.position = 'absolute';
+                element.style.left = '-9999px';
+                console.log("Report exported successfully via direct capture.");
+            } catch (err) {
+                console.error("Manual PDF Generation Error:", err);
+                alert("Critical error generating report: " + err.message);
+                element.style.position = 'absolute';
+                element.style.left = '-9999px';
+            }
+        }, 1000);
 
     } catch (error) {
         console.error('Export failed:', error);

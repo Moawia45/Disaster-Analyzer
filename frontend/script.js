@@ -189,67 +189,90 @@ function setLoading(isLoading) {
     }
 }
 
-function exportPremiumPDF() {
+async function exportPremiumPDF() {
     if (!lastAnalysisData) {
         alert('Please analyze a location first before exporting a report.');
         return;
     }
 
-    // Populate the hidden template
-    document.getElementById('report-id').innerText = 'DR' + Date.now().toString().slice(-6);
-    document.getElementById('report-date').innerText = new Date().toLocaleDateString();
-    document.getElementById('report-location').innerText = document.getElementById('location-input').value || 
-                                                          `${lastAnalysisData.location.lat}, ${lastAnalysisData.location.lon}`;
-    
-    document.getElementById('report-overall-score').innerText = Math.round(lastAnalysisData.overall_score);
-    const riskLevelEl = document.getElementById('report-risk-level');
-    const riskInsightEl = document.getElementById('report-risk-insight');
-    riskLevelEl.innerText = lastAnalysisData.risk_level.toUpperCase() + ' RISK';
-    
-    // Risk level styling and insights
-    if (lastAnalysisData.overall_score > 70) {
-        riskLevelEl.style.background = '#ef4444';
-        riskInsightEl.innerText = "CRITICAL: Significant disaster risks detected. This site requires specialized deep foundations, seismic dampers, and advanced flood protection infrastructure.";
-    } else if (lastAnalysisData.overall_score > 40) {
-        riskLevelEl.style.background = '#f59e0b';
-        riskInsightEl.innerText = "CAUTION: Moderate environmental risks present. Routine construction is permissible but elevated foundation levels and reinforced masonry are recommended.";
-    } else {
-        riskLevelEl.style.background = '#10b981';
-        riskInsightEl.innerText = "SAFE: Environmental variables are within stable limits. Standard construction practices and local building codes are sufficient for this location.";
+    try {
+        console.log("Generating report...");
+        // Populate the hidden template
+        document.getElementById('report-id').innerText = 'DR' + Date.now().toString().slice(-6);
+        document.getElementById('report-date').innerText = new Date().toLocaleDateString();
+        document.getElementById('report-location').innerText = document.getElementById('location-input').value || 
+                                                              `${lastAnalysisData.location.lat}, ${lastAnalysisData.location.lon}`;
+        
+        document.getElementById('report-overall-score').innerText = Math.round(lastAnalysisData.overall_score);
+        const riskLevelEl = document.getElementById('report-risk-level');
+        const riskInsightEl = document.getElementById('report-risk-insight');
+        riskLevelEl.innerText = lastAnalysisData.risk_level.toUpperCase() + ' RISK';
+        
+        // Risk level styling and insights
+        if (lastAnalysisData.overall_score > 70) {
+            riskLevelEl.style.background = '#ef4444';
+            riskInsightEl.innerText = "CRITICAL: Significant disaster risks detected. This site requires specialized deep foundations, seismic dampers, and advanced flood protection infrastructure.";
+        } else if (lastAnalysisData.overall_score > 40) {
+            riskLevelEl.style.background = '#f59e0b';
+            riskInsightEl.innerText = "CAUTION: Moderate environmental risks present. Routine construction is permissible but elevated foundation levels and reinforced masonry are recommended.";
+        } else {
+            riskLevelEl.style.background = '#10b981';
+            riskInsightEl.innerText = "SAFE: Environmental variables are within stable limits. Standard construction practices and local building codes are sufficient for this location.";
+        }
+
+        // Detailed scores
+        document.getElementById('report-eq-score').innerText = lastAnalysisData.breakdown.earthquake.score;
+        document.getElementById('report-eq-meta').innerText = lastAnalysisData.breakdown.earthquake.count + ' seismic events';
+        
+        document.getElementById('report-flood-score').innerText = lastAnalysisData.breakdown.flood.score;
+        document.getElementById('report-flood-meta').innerText = 'River discharge: ' + lastAnalysisData.breakdown.flood.max_discharge_m3s + ' m3/s';
+        
+        document.getElementById('report-rain-score').innerText = lastAnalysisData.breakdown.rainfall.score;
+        document.getElementById('report-rain-meta').innerText = 'Max precip: ' + lastAnalysisData.breakdown.rainfall.max_daily_mm + ' mm';
+
+        // Recommendations
+        const reportRecs = document.getElementById('report-recommendations');
+        reportRecs.innerHTML = '';
+        lastAnalysisData.recommendations.forEach(rec => {
+            const li = document.createElement('li');
+            li.innerText = rec;
+            reportRecs.appendChild(li);
+        });
+
+        // Make template visible for capture
+        const element = document.getElementById('premium-report-template');
+        element.style.display = 'block';
+        
+        // Scroll to top of template to ensure full capture
+        element.scrollIntoView();
+
+        const opt = {
+            margin: 5,
+            filename: `Disaster_Report_${lastAnalysisData.risk_level}_${Date.now().toString().slice(-4)}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2, 
+                logging: false, 
+                useCORS: true,
+                allowTaint: true
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Delay execution slightly to allow for browser rendering
+        setTimeout(() => {
+            html2pdf().from(element).set(opt).save().then(() => {
+                element.style.display = 'none';
+                console.log("Report generated successfully.");
+            }).catch(err => {
+                console.error("PDF generation error:", err);
+                alert("Error generating PDF: " + err.message);
+                element.style.display = 'none';
+            });
+        }, 500);
+
+    } catch (error) {
+        console.error('Export failed:', error);
+        alert('Export failed: ' + error.message);
     }
-
-    // Detailed scores
-    document.getElementById('report-eq-score').innerText = lastAnalysisData.breakdown.earthquake.score;
-    document.getElementById('report-eq-meta').innerText = lastAnalysisData.breakdown.earthquake.count + ' seismic events';
-    
-    document.getElementById('report-flood-score').innerText = lastAnalysisData.breakdown.flood.score;
-    document.getElementById('report-flood-meta').innerText = 'River discharge: ' + lastAnalysisData.breakdown.flood.max_discharge_m3s + ' m3/s';
-    
-    document.getElementById('report-rain-score').innerText = lastAnalysisData.breakdown.rainfall.score;
-    document.getElementById('report-rain-meta').innerText = 'Max precip: ' + lastAnalysisData.breakdown.rainfall.max_daily_mm + ' mm';
-
-    // Recommendations
-    const reportRecs = document.getElementById('report-recommendations');
-    reportRecs.innerHTML = '';
-    lastAnalysisData.recommendations.forEach(rec => {
-        const li = document.createElement('li');
-        li.innerText = rec;
-        reportRecs.appendChild(li);
-    });
-
-    // Make template visible for capture
-    const element = document.getElementById('premium-report-template');
-    element.style.display = 'block';
-
-    const opt = {
-        margin: [0, 0, 5, 0], // Top, Left, Bottom, Right
-        filename: `Report_MoawiaHusnain_${Date.now()}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3, logging: false, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().from(element).set(opt).save().then(() => {
-        element.style.display = 'none'; // Re-hide after export
-    });
 }

@@ -247,14 +247,13 @@ async function exportPremiumPDF() {
         element.scrollIntoView();
 
         const opt = {
-            margin: 5,
-            filename: `Disaster_Report_${lastAnalysisData.risk_level}_${Date.now().toString().slice(-4)}.pdf`,
+            margin: 10,
+            filename: `Report_MoawiaHusnain_${Date.now().toString().slice(-4)}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { 
                 scale: 2, 
-                logging: false, 
-                useCORS: true,
-                allowTaint: true
+                useCORS: true, 
+                letterRendering: true
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
@@ -269,7 +268,7 @@ async function exportPremiumPDF() {
                 alert("Error generating PDF: " + err.message);
                 element.style.display = 'none';
             });
-        }, 500);
+        }, 800);
 
     } catch (error) {
         console.error('Export failed:', error);

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Based Disaster Risk Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>DisasterRisk AI</span>
+            </div>
+            <nav>
+                <div class="nav-item active" id="btn-dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" id="btn-about">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </div>
+                <div class="nav-item" id="btn-uses">
+                    <i class="fas fa-tools"></i>
+                    <span>Uses & Scope</span>
+                </div>
+                <div class="nav-item" id="btn-faq">
+                    <i class="fas fa-question-circle"></i>
+                    <span>FAQ</span>
+                </div>
+            </nav>
+            <div class="author-tag">
+                <p>Created by</p>
+                <strong>Moawia Husnain</strong>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="search-bar" id="app-search-bar">
+                    <input type="text" id="location-input" placeholder="Enter city or coordinates...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="header-actions">
+                    <button id="export-pdf-btn" class="btn btn-secondary">
+                        <i class="fas fa-file-pdf"></i> Report
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <div class="content-section active" id="section-dashboard">
+                <div class="dashboard-grid">
+                    <!-- Map Section -->
+                    <div class="card map-card grid-col-2">
+                        <div class="card-header">
+                            <h3>Interactive Risk Map</h3>
+                            <span>Click to select location</span>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+
+                    <!-- Overall Risk Score -->
+                    <div class="card score-card">
+                        <h3>Overall Risk Score</h3>
+                        <div class="gauge-container">
+                            <div class="gauge">
+                                <div class="gauge-body">
+                                    <div class="gauge-fill" id="risk-gauge"></div>
+                                    <div class="gauge-cover" id="risk-score-text">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="risk-badge" id="risk-level-badge">Calculating...</div>
+                    </div>
+
+                    <!-- Breakdown Cards -->
+                    <div class="card mini-card">
+                        <div class="icon-wrap earthquake"><i class="fas fa-volcano"></i></div>
+                        <div class="mini-content">
+                            <p>Earthquake Risk</p>
+                            <h2 id="eq-score">0.0</h2>
+                        </div>
+                    </div>
+                    <div class="card mini-card">
+                        <div class="icon-wrap flood"><i class="fas fa-water"></i></div>
+                        <div class="mini-content">
+                            <p>Flood Risk</p>
+                            <h2 id="flood-score">0.0</h2>
+                        </div>
+                    </div>
+                    <div class="card mini-card">
+                        <div class="icon-wrap rainfall"><i class="fas fa-cloud-showers-heavy"></i></div>
+                        <div class="mini-content">
+                            <p>Rainfall Impact</p>
+                            <h2 id="rain-score">0.0</h2>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="card recommendations-card grid-col-2">
+                        <div class="card-header">
+                            <h3><i class="fas fa-hard-hat"></i> Engineering Recommendations</h3>
+                        </div>
+                        <ul id="recommendations-list">
+                            <li>Please select a location to generate recommendations.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Visualization -->
+                    <div class="card chart-card grid-col-2">
+                        <div class="card-header">
+                            <h3>Risk Breakdown Visualization</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="content-section" id="section-about">
+                <div class="card info-page">
+                    <h1>About AI-Based Disaster Risk Analyzer</h1>
+                    <p class="lead">A professional-grade environmental assessment tool designed for modern civil engineering and urban planning.</p>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <h3><i class="fas fa-brain"></i> Intelligent Logic</h3>
+                            <p>The system uses weighted algorithmic scoring based on multi-source sensor data and historical records to evaluate site viability.</p>
+                        </div>
+                        <div class="info-item">
+                            <h3><i class="fas fa-database"></i> Real-Time Data</h3>
+                            <p>Direct integration with USGS and Open-Meteo ensures the most current seismic and meteorological data is used for every analysis.</p>
+                        </div>
+                        <div class="info-item">
+                            <h3><i class="fas fa-drafting-compass"></i> Engineering Focused</h3>
+                            <p>Recommendations are tailored to structural safety, drainage requirements, and foundation integrity based on risk tiers.</p>
+                        </div>
+                    </div>
+
+                    <div class="developer-credit">
+                        <p>Project Developed By</p>
+                        <h2>Moawia Husnain</h2>
+                        <span>Civil Engineering & AI Integration Specialist</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uses Section -->
+            <div class="content-section" id="section-uses">
+                <div class="card info-page text-content">
+                    <h1>Uses & Practical Scope</h1>
+                    <div class="use-cases">
+                        <div class="use-case">
+                            <h4>1. Pre-Construction Site Assessment</h4>
+                            <p>Ideal for civil engineers to conduct preliminary risk screening before geotechnical surveys. It helps identify "red-flag" zones for flooding or high seismic activity.</p>
+                        </div>
+                        <div class="use-case">
+                            <h4>2. Urban Planning & Zoning</h4>
+                            <p>Urban planners can use the tool to evaluate large-scale developments and their proximity to river discharge points or seismic fault lines.</p>
+                        </div>
+                        <div class="use-case">
+                            <h4>3. Academic & Environmental Research</h4>
+                            <p>A valuable resource for students and researchers studying the impact of rainfall intensity and long-term disaster trends on infrastructure.</p>
+                        </div>
+                        <div class="use-case">
+                            <h4>4. Disaster Mitigation Planning</h4>
+                            <p>Helps in designing proper stormwater management systems and selecting appropriate building materials (e.g., ductile design in earthquake zones).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="content-section" id="section-faq">
+                <div class="card info-page">
+                    <h1>Frequently Asked Questions</h1>
+                    <div class="faq-list">
+                        <div class="faq-item">
+                            <h4>How accurate is the risk score?</h4>
+                            <p>The score is a calculated estimate based on 20 years of historical data. While highly indicative of trends, it should be supplemented by on-site geotechnical investigations.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Where does the data come from?</h4>
+                            <p>We use the United States Geological Survey (USGS) for earthquake data and Open-Meteo Global Archives for rainfall and flood discharge data.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>What does the 0-100 score mean?</h4>
+                            <p>0-40 is Low Risk (Safe/Standard practices), 40-70 is Medium Risk (Enhanced caution), and 70-100 is High Risk (Significant engineering interventions required).</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Does it work globally?</h4>
+                            <p>Yes, the tool utilizes global datasets and can analyze coordinates anywhere on Earth.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="mobile-footer">
+                <p>AI-Based Disaster Risk Analyzer</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Hidden Premium Report Template -->
+    <div id="premium-report-template" style="display: none;">
+        <div class="print-report">
+            <div class="report-accent"></div>
+            <div class="report-header">
+                <div class="header-left">
+                    <img src="logo.png" alt="Engineering Seal" class="report-img-logo">
+                    <div class="header-text">
+                        <div class="report-logo">DISASTER RISK ANALYSIS REPORT</div>
+                        <div class="report-sub">Department of Civil Engineering | UET Taxila</div>
+                    </div>
+                </div>
+                <div class="report-meta">
+                    <p>Report ID: <span id="report-id"></span></p>
+                    <p>Date: <span id="report-date"></span></p>
+                    <p>Location: <span id="report-location"></span></p>
+                </div>
+            </div>
+
+            <div class="report-body">
+                <div class="report-section overall-risk">
+                    <h2>Site Evaluation Summary</h2>
+                    <div class="risk-summary-box">
+                        <div class="score-display">
+                            <span class="label">OVERALL RISK SCORE</span>
+                            <span class="value" id="report-overall-score">0</span>
+                        </div>
+                        <div class="insight-display">
+                            <h4 id="report-risk-level">MEDIUM RISK</h4>
+                            <p id="report-risk-insight">Preliminary site assessment indicates environmental variables are within manageable limits for standard construction.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="risk-details-grid">
+                    <div class="risk-detail-item">
+                        <h3><i class="fas fa-volcano"></i> Earthquake</h3>
+                        <p class="score" id="report-eq-score">0</p>
+                        <p id="report-eq-meta"></p>
+                    </div>
+                    <div class="risk-detail-item">
+                        <h3><i class="fas fa-water"></i> Flood</h3>
+                        <p class="score" id="report-flood-score">0</p>
+                        <p id="report-flood-meta"></p>
+                    </div>
+                    <div class="risk-detail-item">
+                        <h3><i class="fas fa-cloud-showers-heavy"></i> Rainfall</h3>
+                        <p class="score" id="report-rain-score">0</p>
+                        <p id="report-rain-meta"></p>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h2>Engineering Recommendations</h2>
+                    <ul id="report-recommendations" class="print-list grid-recs">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+                <div class="report-footer">
+                    <div class="signatures">
+                        <div class="sig-box">
+                            <p>Analyzed By</p>
+                            <div class="sig-line"></div>
+                            <strong class="cursive">AI-Based Risk System v1.0</strong>
+                        </div>
+                        <div class="sig-box">
+                            <p>Project Lead</p>
+                            <div class="sig-line"></div>
+                            <strong class="cursive">Moawia Husnain</strong>
+                            <small>Civil Engineer (UET Taxila)</small>
+                        </div>
+                    </div>
+                    <div class="disclaimer">
+                        <strong>LEGAL NOTICE:</strong> This report is generated as a preliminary site screening tool. 
+                        It utilizes global datasets (USGS, Open-Meteo) and weighted algorithmic calculation. 
+                        Final construction permits and structural designs MUST be based on mandatory on-site geotechnical 
+                        and soil testing conducted by certified professionals.
+                    </div>
+                </div>
+                
+                <!-- Print Safe Spacer to prevent footer cut-off -->
+                <div class="print-spacer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

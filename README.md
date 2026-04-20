@@ -4,6 +4,7 @@ A professional, research-oriented web application developed to analyze disaster 
 
 ## Developed By
 **Moawia Husnain**  
+*moawiahussnain4@gmail.com*
 *Civil Engineer, UET Taxila*
 
 ---

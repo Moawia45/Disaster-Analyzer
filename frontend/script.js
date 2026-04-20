@@ -239,34 +239,34 @@ async function exportPremiumPDF() {
             reportRecs.appendChild(li);
         });
 
-        // Make template visible for capture
+        // Template is off-screen but always in layout flow to ensure height/width are detected
         const element = document.getElementById('premium-report-template');
-        element.style.display = 'block';
         
-        // Scroll to top of template to ensure full capture
-        element.scrollIntoView();
-
+        // Final Robust PDF Settings
         const opt = {
-            margin: 10,
-            filename: `Report_MoawiaHusnain_${Date.now().toString().slice(-4)}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            margin: [10, 10], // top/bottom, left/right
+            filename: `Disaster_Report_${Date.now().toString().slice(-4)}.pdf`,
+            image: { type: 'jpeg', quality: 0.95 },
             html2canvas: { 
                 scale: 2, 
+                backgroundColor: '#ffffff', // Force white background
                 useCORS: true, 
-                letterRendering: true
+                logging: false, // Turn off for production
+                letterRendering: true,
+                allowTaint: false,
+                scrollY: 0, 
+                scrollX: 0
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Delay execution slightly to allow for browser rendering
+        // Delay execution slightly to allow for any UI/data updates to finish painting
         setTimeout(() => {
             html2pdf().from(element).set(opt).save().then(() => {
-                element.style.display = 'none';
                 console.log("Report generated successfully.");
             }).catch(err => {
                 console.error("PDF generation error:", err);
                 alert("Error generating PDF: " + err.message);
-                element.style.display = 'none';
             });
         }, 800);
 
